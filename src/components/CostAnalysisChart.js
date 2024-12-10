@@ -531,14 +531,14 @@ export default function CostAnalysisChart() {
               </h2>
               <p className="text-sm lg:text-base text-gray-300 leading-relaxed">
                 Embark on an enchanted adventure through Munchkin Land with
-                Dorothy's interactive cost calculator! The Wicked Witch of the
-                West has offered magical upgrades for Dorothy's car - but are
-                they worth the investment? Explore different spell combinations,
-                compare costs, and discover the most economical path to Oz.
-                Simply add spell scenarios, choose your timing, and watch as the
-                magic unfolds in real-time through our dynamic visualization.
-                Let's find the perfect balance between magic and gold coins!
-                ✨🚗
+                Dorothy&apos;s interactive cost calculator! The Wicked Witch of
+                the West has offered magical upgrades for Dorothy&apos;s car -
+                but are they worth the investment? Explore different spell
+                combinations, compare costs, and discover the most economical
+                path to Oz. Simply add spell scenarios, choose your timing, and
+                watch as the magic unfolds in real-time through our dynamic
+                visualization. Let&apos;s find the perfect balance between magic
+                and gold coins! ✨🚗
               </p>
             </div>
 
