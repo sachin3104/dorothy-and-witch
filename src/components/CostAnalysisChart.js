@@ -234,132 +234,141 @@ export default function CostAnalysisChart() {
   }, [selectedSpells, calculateScenarioSavings]);
 
   useEffect(() => {
-    if (chartRef.current) {
-      try {
-        const ctx = chartRef.current.getContext("2d");
+    if (!chartRef.current) return;
 
-        if (chartInstance) {
-          chartInstance.destroy();
-        }
+    try {
+      const ctx = chartRef.current.getContext("2d");
 
-        // Define chart colors
-        const colors = [
-          {
-            border: "rgb(75, 192, 192)",
-            background: "rgba(75, 192, 192, 0.2)",
-          },
-          {
-            border: "rgb(255, 99, 132)",
-            background: "rgba(255, 99, 132, 0.2)",
-          },
-          {
-            border: "rgb(255, 159, 64)",
-            background: "rgba(255, 159, 64, 0.2)",
-          },
-          {
-            border: "rgb(153, 102, 255)",
-            background: "rgba(153, 102, 255, 0.2)",
-          },
-          {
-            border: "rgb(54, 162, 235)",
-            background: "rgba(54, 162, 235, 0.2)",
-          },
-        ];
-
-        const datasets = [
-          // Baseline dataset
-          {
-            label: "Without Spells",
-            data: generateBaselineData,
-            borderColor: colors[0].border,
-            backgroundColor: colors[0].background,
-            tension: 0.1,
-            borderWidth: 2,
-            pointRadius: 5,
-            pointBackgroundColor: colors[0].border,
-          },
-          // Datasets for each selected spell
-          ...selectedSpells.map((spellConfig, index) => ({
-            label: `With ${spellConfig.spell.label} (${
-              MONTHS[spellConfig.month]
-            })`,
-            data: generateSpellData(spellConfig.spell, spellConfig.month),
-            borderColor: colors[(index + 1) % colors.length].border,
-            backgroundColor: colors[(index + 1) % colors.length].background,
-            tension: 0.1,
-            borderWidth: 2,
-            pointRadius: 5,
-            pointBackgroundColor: colors[(index + 1) % colors.length].border,
-          })),
-        ];
-
-        const newChartInstance = new Chart(ctx, {
-          type: "line",
-          data: { labels: MONTHS, datasets },
-          options: {
-            responsive: true,
-            plugins: {
-              tooltip: {
-                callbacks: {
-                  label: (context) => {
-                    const datasetLabel = context.dataset.label;
-                    const value = context.parsed.y;
-                    return `${datasetLabel}: ${value} Gold Coins`;
-                  },
-                },
-              },
-              legend: {
-                display: true,
-                position: "top",
-                labels: {
-                  color: "#e2e8f0",
-                  usePointStyle: true,
-                  padding: 20,
-                },
-              },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                grid: {
-                  color: "rgba(148, 163, 184, 0.1)",
-                },
-                ticks: {
-                  color: "#e2e8f0",
-                },
-                title: {
-                  display: true,
-                  text: "Gold Coins Spent",
-                  color: "#e2e8f0",
-                },
-              },
-              x: {
-                grid: {
-                  color: "rgba(148, 163, 184, 0.1)",
-                },
-                ticks: {
-                  color: "#e2e8f0",
-                },
-                title: {
-                  display: true,
-                  text: "Month",
-                  color: "#e2e8f0",
-                },
-              },
-            },
-            interaction: {
-              intersect: false,
-              mode: "index",
-            },
-          },
-        });
-
-        setChartInstance(newChartInstance);
-        setError(null);
-      } catch (err) {
-        setError("Failed to render chart");
+      // Destroy existing chart instance if it exists
+      if (chartInstance) {
+        chartInstance.destroy();
       }
+
+      // Define chart colors
+      const colors = [
+        {
+          border: "rgb(75, 192, 192)",
+          background: "rgba(75, 192, 192, 0.2)",
+        },
+        {
+          border: "rgb(255, 99, 132)",
+          background: "rgba(255, 99, 132, 0.2)",
+        },
+        {
+          border: "rgb(255, 159, 64)",
+          background: "rgba(255, 159, 64, 0.2)",
+        },
+        {
+          border: "rgb(153, 102, 255)",
+          background: "rgba(153, 102, 255, 0.2)",
+        },
+        {
+          border: "rgb(54, 162, 235)",
+          background: "rgba(54, 162, 235, 0.2)",
+        },
+      ];
+
+      const datasets = [
+        // Baseline dataset
+        {
+          label: "Without Spells",
+          data: generateBaselineData,
+          borderColor: colors[0].border,
+          backgroundColor: colors[0].background,
+          tension: 0.1,
+          borderWidth: 2,
+          pointRadius: 5,
+          pointBackgroundColor: colors[0].border,
+        },
+        // Datasets for each selected spell
+        ...selectedSpells.map((spellConfig, index) => ({
+          label: `With ${spellConfig.spell.label} (${
+            MONTHS[spellConfig.month]
+          })`,
+          data: generateSpellData(spellConfig.spell, spellConfig.month),
+          borderColor: colors[(index + 1) % colors.length].border,
+          backgroundColor: colors[(index + 1) % colors.length].background,
+          tension: 0.1,
+          borderWidth: 2,
+          pointRadius: 5,
+          pointBackgroundColor: colors[(index + 1) % colors.length].border,
+        })),
+      ];
+
+      const newChartInstance = new Chart(ctx, {
+        type: "line",
+        data: { labels: MONTHS, datasets },
+        options: {
+          responsive: true,
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: (context) => {
+                  const datasetLabel = context.dataset.label;
+                  const value = context.parsed.y;
+                  return `${datasetLabel}: ${value} Gold Coins`;
+                },
+              },
+            },
+            legend: {
+              display: true,
+              position: "top",
+              labels: {
+                color: "#e2e8f0",
+                usePointStyle: true,
+                padding: 20,
+              },
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: {
+                color: "rgba(148, 163, 184, 0.1)",
+              },
+              ticks: {
+                color: "#e2e8f0",
+              },
+              title: {
+                display: true,
+                text: "Gold Coins Spent",
+                color: "#e2e8f0",
+              },
+            },
+            x: {
+              grid: {
+                color: "rgba(148, 163, 184, 0.1)",
+              },
+              ticks: {
+                color: "#e2e8f0",
+              },
+              title: {
+                display: true,
+                text: "Month",
+                color: "#e2e8f0",
+              },
+            },
+          },
+          interaction: {
+            intersect: false,
+            mode: "index",
+          },
+        },
+      });
+
+      setChartInstance(newChartInstance);
+      setError(null);
+    } catch (err) {
+      setError("Failed to render chart");
     }
+
+    // Cleanup function
+    return () => {
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedSpells, generateBaselineData, generateSpellData]);
 
   // Calculate total journey cost
