@@ -1,3 +1,9 @@
+import CostAnalysisChart from "../components/CostAnalysisChart";
+
 export default function Home() {
-  return <div>this is page</div>;
+  return (
+    <main className="min-h-screen bg-gray-100">
+      <CostAnalysisChart />
+    </main>
+  );
 }
