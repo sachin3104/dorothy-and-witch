@@ -64,7 +64,6 @@ const SPELL_OPTIONS = {
     hourlyRate: BASE_COST_PER_HOUR,
     description: "Continue journey with original car efficiency",
     efficiency: 1,
-    risk: 0,
   },
   TIRE: {
     label: "Tire Spell",
@@ -73,7 +72,6 @@ const SPELL_OPTIONS = {
     hourlyRate: 93,
     description: "Upgrade tires for slightly improved efficiency",
     efficiency: 1.07,
-    risk: 0.1,
   },
   ENGINE: {
     label: "Engine Spell",
@@ -82,7 +80,6 @@ const SPELL_OPTIONS = {
     hourlyRate: 83,
     description: "Upgrade engine for significant efficiency improvement",
     efficiency: 1.17,
-    risk: 0.2,
   },
   BOTH: {
     label: "Both Spells",
@@ -91,7 +88,6 @@ const SPELL_OPTIONS = {
     hourlyRate: 83,
     description: "Comprehensive magical upgrade for maximum efficiency",
     efficiency: 1.25,
-    risk: 0.3,
   },
 };
 
@@ -228,7 +224,7 @@ export default function CostAnalysisChart() {
       ...bestScenario,
       recommendation:
         bestScenario.savings > 0
-          ? `Recommended: ${
+          ? `${
               bestScenario.description
             } provides the highest savings of ${bestScenario.savings.toFixed(
               2
@@ -379,232 +375,249 @@ export default function CostAnalysisChart() {
     }, 0);
   }, [selectedSpells, generateSpellData]);
 
-  const getRiskAssessment = useCallback(() => {
-    const riskLevel = selectedSpells.reduce((maxRisk, spellConfig) => {
-      return Math.max(maxRisk, spellConfig.spell.risk);
-    }, 0);
-    if (riskLevel === 0) return "No Additional Risk";
-    if (riskLevel <= 0.1) return "Low Risk";
-    if (riskLevel <= 0.2) return "Medium Risk";
-    return "High Risk";
-  }, [selectedSpells]);
-
-  // Add a comparison section in the UI
+  // Update the costDifference calculation
   const costDifference = useMemo(() => {
     const baselineTotal = generateBaselineData.reduce(
       (sum, cost) => sum + cost,
       0
     );
-    const spellTotal = totalJourneyCost;
-    return baselineTotal - spellTotal;
-  }, [generateBaselineData, totalJourneyCost]);
+
+    // If there's no recommended scenario, return 0
+    if (!getRecommendedScenario) return 0;
+
+    // Calculate cost with recommended spell
+    const recommendedSpellCost = generateSpellData(
+      getRecommendedScenario.spellConfig.spell,
+      getRecommendedScenario.spellConfig.month
+    ).reduce((sum, cost) => sum + cost, 0);
+
+    return baselineTotal - recommendedSpellCost;
+  }, [generateBaselineData, generateSpellData, getRecommendedScenario]);
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col lg:flex-row">
-      {/* Sidebar - Full width on mobile, side on desktop */}
-      <div
-        className="w-full lg:w-80 bg-gray-800/50 border-b lg:border-r border-purple-500/30 p-4 lg:p-6 
-                      flex flex-col lg:min-h-screen"
-      >
-        {/* Sidebar Header */}
-        <div className="mb-6 lg:mb-8">
-          <h2 className="text-xl font-wizard text-purple-300 mb-2">
-            Spell Workshop
-          </h2>
-          <p className="text-sm text-gray-400">
-            Create and manage your magical scenarios
-          </p>
-        </div>
-
-        {/* Add Spell Button */}
-        <button
-          onClick={addSpell}
-          className="bg-purple-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg hover:bg-purple-700 
-                     transition-all duration-200 shadow-lg hover:shadow-purple-500/25
-                     font-semibold tracking-wide mb-4 lg:mb-6 text-sm lg:text-base"
+    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col">
+      {/* Full Width Header */}
+      <header className="w-full bg-gray-800/50 border-b border-purple-500/30 p-6 text-center">
+        <h1
+          className={`text-3xl lg:text-5xl mb-2 lg:mb-4 font-wizard bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-transparent bg-clip-text`}
         >
-          ✨ Add New Spell Scenario
-        </button>
+          Dorothy & The Witch
+        </h1>
+        <p className="text-lg lg:text-xl text-purple-300 italic">
+          A Magical Journey Cost Analysis
+        </p>
+      </header>
 
-        {/* Spell Configurations */}
-        <div className="flex-1 overflow-y-auto space-y-4 max-h-[300px] lg:max-h-none">
-          {selectedSpells.map((spellConfig) => (
-            <div
-              key={spellConfig.id}
-              className="p-3 lg:p-4 rounded-lg border border-purple-500/30 
-                            bg-gray-800 backdrop-blur-sm shadow-xl"
-            >
-              <div className="space-y-3 lg:space-y-4">
-                <div>
-                  <label className="block mb-1 lg:mb-2 font-semibold text-purple-300 text-sm lg:text-base">
-                    Select Magical Spell:
-                  </label>
-                  <select
-                    value={Object.keys(SPELL_OPTIONS).find(
-                      (key) => SPELL_OPTIONS[key] === spellConfig.spell
-                    )}
-                    onChange={(e) =>
-                      updateSpell(
-                        spellConfig.id,
-                        SPELL_OPTIONS[e.target.value],
-                        spellConfig.month
-                      )
-                    }
-                    className="w-full p-2 rounded bg-gray-700 border border-purple-500/30 
-                               text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent
-                               text-sm lg:text-base"
-                  >
-                    {Object.keys(SPELL_OPTIONS).map((key) => (
-                      <option key={key} value={key}>
-                        {SPELL_OPTIONS[key].label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block mb-1 lg:mb-2 font-semibold text-purple-300 text-sm lg:text-base">
-                    Select Spell Month:
-                  </label>
-                  <select
-                    value={spellConfig.month}
-                    onChange={(e) =>
-                      updateSpell(
-                        spellConfig.id,
-                        spellConfig.spell,
-                        Number(e.target.value)
-                      )
-                    }
-                    className="w-full p-2 rounded bg-gray-700 border border-purple-500/30 
-                               text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent
-                               text-sm lg:text-base"
-                  >
-                    {MONTHS.slice(6).map((month, index) => (
-                      <option key={month} value={index + 6}>
-                        {month}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <button
-                  onClick={() => removeSpell(spellConfig.id)}
-                  className="w-full mt-2 px-3 py-1 text-red-400 hover:text-red-300 
-                             transition-colors duration-200 border border-red-400/50 
-                             rounded hover:bg-red-400/10 text-sm lg:text-base"
-                >
-                  🗑️ Remove Spell
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
-        {/* Header */}
-        <div className="mb-6 lg:mb-12 text-center">
-          <h1
-            className={`text-3xl lg:text-5xl mb-2 lg:mb-4 font-wizard bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-transparent bg-clip-text`}
-          >
-            Dorothy & The Witch
-          </h1>
-          <p className="text-lg lg:text-xl text-purple-300 italic">
-            A Magical Journey Cost Analysis
-          </p>
-        </div>
-
-        {/* Error Alert */}
-        {error && (
-          <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded relative mb-4 text-sm lg:text-base">
-            <strong className="font-bold">Error: </strong>
-            <span className="block sm:inline">{error}</span>
-          </div>
-        )}
-
-        {/* Chart Container */}
-        <div className="bg-gray-800/50 p-4 lg:p-6 rounded-lg shadow-xl border border-purple-500/30 backdrop-blur-sm mb-4 lg:mb-6">
-          <canvas ref={chartRef}></canvas>
-        </div>
-
-        {/* Bottom Section Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
-          {/* Journey Cost Summary */}
-          <div className="bg-gray-800/50 p-4 lg:p-6 rounded-lg border border-purple-500/30 backdrop-blur-sm">
-            <h2 className="font-bold text-lg lg:text-xl mb-3 lg:mb-4 text-purple-300">
-              Journey Cost Summary
+      {/* Content Container */}
+      <div className="flex flex-col lg:flex-row flex-1">
+        {/* Sidebar */}
+        <div className="w-full lg:w-80 bg-gray-800/50 border-b lg:border-r border-purple-500/30 p-4 lg:p-6 flex flex-col">
+          {/* Sidebar Header */}
+          <div className="mb-6 lg:mb-8">
+            <h2 className="text-xl font-wizard text-purple-300 mb-2">
+              Spell Workshop
             </h2>
-            <div className="space-y-2 text-sm lg:text-base text-gray-300">
-              <p>
-                Cost Without Spells:{" "}
-                {generateBaselineData
-                  .reduce((sum, cost) => sum + cost, 0)
-                  .toFixed(2)}{" "}
-                Gold Coins
+            <p className="text-sm text-gray-400">
+              Create and manage your magical scenarios
+            </p>
+          </div>
+
+          {/* Rest of the sidebar content */}
+          <button
+            onClick={addSpell}
+            className="bg-purple-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg hover:bg-purple-700 
+                       transition-all duration-200 shadow-lg hover:shadow-purple-500/25
+                       font-semibold tracking-wide mb-4 lg:mb-6 text-sm lg:text-base"
+          >
+            ✨ Add New Spell Scenario
+          </button>
+
+          <div className="flex-1 overflow-y-auto space-y-4 max-h-[300px] lg:max-h-none">
+            {/* Spell configurations */}
+            {selectedSpells.map((spellConfig) => (
+              <div
+                key={spellConfig.id}
+                className="p-3 lg:p-4 rounded-lg border border-purple-500/30 
+                              bg-gray-800 backdrop-blur-sm shadow-xl"
+              >
+                <div className="space-y-3 lg:space-y-4">
+                  <div>
+                    <label className="block mb-1 lg:mb-2 font-semibold text-purple-300 text-sm lg:text-base">
+                      Select Magical Spell:
+                    </label>
+                    <select
+                      value={Object.keys(SPELL_OPTIONS).find(
+                        (key) => SPELL_OPTIONS[key] === spellConfig.spell
+                      )}
+                      onChange={(e) =>
+                        updateSpell(
+                          spellConfig.id,
+                          SPELL_OPTIONS[e.target.value],
+                          spellConfig.month
+                        )
+                      }
+                      className="w-full p-2 rounded bg-gray-700 border border-purple-500/30 
+                                 text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                                 text-sm lg:text-base"
+                    >
+                      {Object.keys(SPELL_OPTIONS).map((key) => (
+                        <option key={key} value={key}>
+                          {SPELL_OPTIONS[key].label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block mb-1 lg:mb-2 font-semibold text-purple-300 text-sm lg:text-base">
+                      Select Spell Month:
+                    </label>
+                    <select
+                      value={spellConfig.month}
+                      onChange={(e) =>
+                        updateSpell(
+                          spellConfig.id,
+                          spellConfig.spell,
+                          Number(e.target.value)
+                        )
+                      }
+                      className="w-full p-2 rounded bg-gray-700 border border-purple-500/30 
+                                 text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                                 text-sm lg:text-base"
+                    >
+                      {MONTHS.slice(6).map((month, index) => (
+                        <option key={month} value={index + 6}>
+                          {month}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    onClick={() => removeSpell(spellConfig.id)}
+                    className="w-full mt-2 px-3 py-1 text-red-400 hover:text-red-300 
+                               transition-colors duration-200 border border-red-400/50 
+                               rounded hover:bg-red-400/10 text-sm lg:text-base"
+                  >
+                    🗑️ Remove Spell
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
+          {/* Error Alert */}
+          {error && (
+            <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded relative mb-4 text-sm lg:text-base">
+              <strong className="font-bold">Error: </strong>
+              <span className="block sm:inline">{error}</span>
+            </div>
+          )}
+
+          {/* Chart Container */}
+          <div className="bg-gray-800/50 p-4 lg:p-6 rounded-lg shadow-xl border border-purple-500/30 backdrop-blur-sm mb-4 lg:mb-6">
+            <canvas ref={chartRef}></canvas>
+          </div>
+
+          {/* Bottom Section Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+            {/* Description Section - Add this first */}
+            <div className="lg:col-span-2 bg-gray-800/50 p-4 lg:p-6 rounded-lg border border-purple-500/30 backdrop-blur-sm mb-4">
+              <h2 className="font-bold text-lg lg:text-xl mb-3 text-purple-300">
+                🌟 Welcome to Dorothy's Magical Journey Planner!
+              </h2>
+              <p className="text-sm lg:text-base text-gray-300 leading-relaxed">
+                Embark on an enchanted adventure through Munchkin Land with
+                Dorothy's interactive cost calculator! The Wicked Witch of the
+                West has offered magical upgrades for Dorothy's car - but are
+                they worth the investment? Explore different spell combinations,
+                compare costs, and discover the most economical path to Oz.
+                Simply add spell scenarios, choose your timing, and watch as the
+                magic unfolds in real-time through our dynamic visualization.
+                Let's find the perfect balance between magic and gold coins!
+                ✨🚗
               </p>
-              {getRecommendedScenario && (
+            </div>
+
+            {/* Journey Cost Summary */}
+            <div className="bg-gray-800/50 p-4 lg:p-6 rounded-lg border border-purple-500/30 backdrop-blur-sm">
+              <h2 className="font-bold text-lg lg:text-xl mb-3 lg:mb-4 text-purple-300">
+                Journey Cost Summary
+              </h2>
+              <div className="space-y-2 text-sm lg:text-base text-gray-300">
                 <p>
-                  Cost With Recommended Spell:{" "}
-                  {generateSpellData(
-                    getRecommendedScenario.spellConfig.spell,
-                    getRecommendedScenario.spellConfig.month
-                  )
+                  Cost Without Spells:{" "}
+                  {generateBaselineData
                     .reduce((sum, cost) => sum + cost, 0)
                     .toFixed(2)}{" "}
                   Gold Coins
                 </p>
-              )}
-              <p
-                className={`font-bold ${
-                  costDifference > 0 ? "text-green-400" : "text-red-400"
-                }`}
-              >
-                Total Savings: {costDifference.toFixed(2)} Gold Coins
-              </p>
-              <p>Risk Assessment: {getRiskAssessment()}</p>
+                {getRecommendedScenario && (
+                  <p>
+                    Cost With Recommended Spell:{" "}
+                    {generateSpellData(
+                      getRecommendedScenario.spellConfig.spell,
+                      getRecommendedScenario.spellConfig.month
+                    )
+                      .reduce((sum, cost) => sum + cost, 0)
+                      .toFixed(2)}{" "}
+                    Gold Coins
+                  </p>
+                )}
+                <p
+                  className={`font-bold ${
+                    costDifference > 0 ? "text-green-400" : "text-red-400"
+                  }`}
+                >
+                  Total Savings: {costDifference.toFixed(2)} Gold Coins
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Recommendation Section */}
-          {selectedSpells.length > 0 && getRecommendedScenario && (
-            <div
-              className={`p-4 rounded ${
-                getRecommendedScenario.savings > 0
-                  ? "bg-green-900/50 border border-green-500"
-                  : "bg-yellow-900/50 border border-yellow-500"
-              }`}
-            >
-              <h2 className="font-bold text-base lg:text-lg mb-2">
-                Recommendation Analysis
-              </h2>
-              <p
-                className={`text-sm lg:text-base ${
+            {/* Recommendation Section */}
+            {selectedSpells.length > 0 && getRecommendedScenario && (
+              <div
+                className={`p-4 rounded ${
                   getRecommendedScenario.savings > 0
-                    ? "text-green-300"
-                    : "text-yellow-300"
+                    ? "bg-green-900/50 border border-green-500"
+                    : "bg-yellow-900/50 border border-yellow-500"
                 }`}
               >
-                {getRecommendedScenario.recommendation}
-              </p>
-              {getRecommendedScenario.savings > 0 && (
-                <div className="mt-2 text-xs lg:text-sm text-gray-300">
-                  <p>
-                    Investment Required:{" "}
-                    {(
-                      getRecommendedScenario.spellConfig.spell.tireCost +
-                      getRecommendedScenario.spellConfig.spell.engineCost
-                    ).toFixed(2)}{" "}
-                    gold coins
-                  </p>
-                  <p>
-                    Return on Investment:{" "}
-                    {getRecommendedScenario.roi.toFixed(1)}%
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+                <h2 className="font-bold text-base lg:text-lg mb-2">
+                  Recommended Spell:{" "}
+                  {getRecommendedScenario.spellConfig.spell.label}
+                </h2>
+                <p
+                  className={`text-sm lg:text-base ${
+                    getRecommendedScenario.savings > 0
+                      ? "text-green-300"
+                      : "text-yellow-300"
+                  }`}
+                >
+                  {getRecommendedScenario.recommendation}
+                </p>
+                {getRecommendedScenario.savings > 0 && (
+                  <div className="mt-2 text-xs lg:text-sm text-gray-300">
+                    <p>
+                      Investment Required:{" "}
+                      {(
+                        getRecommendedScenario.spellConfig.spell.tireCost +
+                        getRecommendedScenario.spellConfig.spell.engineCost
+                      ).toFixed(2)}{" "}
+                      gold coins
+                    </p>
+                    <p>
+                      Return on Investment:{" "}
+                      {getRecommendedScenario.roi.toFixed(1)}%
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
