@@ -316,6 +316,7 @@ export default function CostAnalysisChart() {
                 display: true,
                 position: "top",
                 labels: {
+                  color: "#e2e8f0",
                   usePointStyle: true,
                   padding: 20,
                 },
@@ -324,15 +325,29 @@ export default function CostAnalysisChart() {
             scales: {
               y: {
                 beginAtZero: true,
+                grid: {
+                  color: "rgba(148, 163, 184, 0.1)",
+                },
+                ticks: {
+                  color: "#e2e8f0",
+                },
                 title: {
                   display: true,
                   text: "Gold Coins Spent",
+                  color: "#e2e8f0",
                 },
               },
               x: {
+                grid: {
+                  color: "rgba(148, 163, 184, 0.1)",
+                },
+                ticks: {
+                  color: "#e2e8f0",
+                },
                 title: {
                   display: true,
                   text: "Month",
+                  color: "#e2e8f0",
                 },
               },
             },
@@ -385,150 +400,211 @@ export default function CostAnalysisChart() {
   }, [generateBaselineData, totalJourneyCost]);
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6 text-center text-blue-600">
-        Dorothy&apos;s Magical Journey Cost Analysis
-      </h1>
-
-      {error && (
-        <div
-          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
-          role="alert"
-        >
-          <strong className="font-bold">Error: </strong>
-          <span className="block sm:inline">{error}</span>
+    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col lg:flex-row">
+      {/* Sidebar - Full width on mobile, side on desktop */}
+      <div
+        className="w-full lg:w-80 bg-gray-800/50 border-b lg:border-r border-purple-500/30 p-4 lg:p-6 
+                      flex flex-col lg:min-h-screen"
+      >
+        {/* Sidebar Header */}
+        <div className="mb-6 lg:mb-8">
+          <h2 className="text-xl font-wizard text-purple-300 mb-2">
+            Spell Workshop
+          </h2>
+          <p className="text-sm text-gray-400">
+            Create and manage your magical scenarios
+          </p>
         </div>
-      )}
 
-      <div className="mb-6">
+        {/* Add Spell Button */}
         <button
           onClick={addSpell}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="bg-purple-600 text-white px-4 lg:px-6 py-2 lg:py-3 rounded-lg hover:bg-purple-700 
+                     transition-all duration-200 shadow-lg hover:shadow-purple-500/25
+                     font-semibold tracking-wide mb-4 lg:mb-6 text-sm lg:text-base"
         >
-          Add New Spell Scenario
+          ✨ Add New Spell Scenario
         </button>
+
+        {/* Spell Configurations */}
+        <div className="flex-1 overflow-y-auto space-y-4 max-h-[300px] lg:max-h-none">
+          {selectedSpells.map((spellConfig) => (
+            <div
+              key={spellConfig.id}
+              className="p-3 lg:p-4 rounded-lg border border-purple-500/30 
+                            bg-gray-800 backdrop-blur-sm shadow-xl"
+            >
+              <div className="space-y-3 lg:space-y-4">
+                <div>
+                  <label className="block mb-1 lg:mb-2 font-semibold text-purple-300 text-sm lg:text-base">
+                    Select Magical Spell:
+                  </label>
+                  <select
+                    value={Object.keys(SPELL_OPTIONS).find(
+                      (key) => SPELL_OPTIONS[key] === spellConfig.spell
+                    )}
+                    onChange={(e) =>
+                      updateSpell(
+                        spellConfig.id,
+                        SPELL_OPTIONS[e.target.value],
+                        spellConfig.month
+                      )
+                    }
+                    className="w-full p-2 rounded bg-gray-700 border border-purple-500/30 
+                               text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                               text-sm lg:text-base"
+                  >
+                    {Object.keys(SPELL_OPTIONS).map((key) => (
+                      <option key={key} value={key}>
+                        {SPELL_OPTIONS[key].label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block mb-1 lg:mb-2 font-semibold text-purple-300 text-sm lg:text-base">
+                    Select Spell Month:
+                  </label>
+                  <select
+                    value={spellConfig.month}
+                    onChange={(e) =>
+                      updateSpell(
+                        spellConfig.id,
+                        spellConfig.spell,
+                        Number(e.target.value)
+                      )
+                    }
+                    className="w-full p-2 rounded bg-gray-700 border border-purple-500/30 
+                               text-gray-100 focus:ring-2 focus:ring-purple-500 focus:border-transparent
+                               text-sm lg:text-base"
+                  >
+                    {MONTHS.slice(6).map((month, index) => (
+                      <option key={month} value={index + 6}>
+                        {month}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  onClick={() => removeSpell(spellConfig.id)}
+                  className="w-full mt-2 px-3 py-1 text-red-400 hover:text-red-300 
+                             transition-colors duration-200 border border-red-400/50 
+                             rounded hover:bg-red-400/10 text-sm lg:text-base"
+                >
+                  🗑️ Remove Spell
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {selectedSpells.map((spellConfig) => (
-        <div
-          key={spellConfig.id}
-          className="grid md:grid-cols-2 gap-4 mb-6 p-4 border rounded"
-        >
-          <div>
-            <label className="block mb-2 font-semibold">
-              Select Magical Spell:
-            </label>
-            <select
-              value={Object.keys(SPELL_OPTIONS).find(
-                (key) => SPELL_OPTIONS[key] === spellConfig.spell
-              )}
-              onChange={(e) =>
-                updateSpell(
-                  spellConfig.id,
-                  SPELL_OPTIONS[e.target.value],
-                  spellConfig.month
-                )
-              }
-              className="w-full p-2 border rounded"
-            >
-              {Object.keys(SPELL_OPTIONS).map((key) => (
-                <option key={key} value={key}>
-                  {SPELL_OPTIONS[key].label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block mb-2 font-semibold">
-              Select Spell Month:
-            </label>
-            <select
-              value={spellConfig.month}
-              onChange={(e) =>
-                updateSpell(
-                  spellConfig.id,
-                  spellConfig.spell,
-                  Number(e.target.value)
-                )
-              }
-              className="w-full p-2 border rounded"
-            >
-              {MONTHS.slice(6).map((month, index) => (
-                <option key={month} value={index + 6}>
-                  {month}
-                </option>
-              ))}
-            </select>
-            <button
-              onClick={() => removeSpell(spellConfig.id)}
-              className="mt-2 text-red-500 hover:text-red-700"
-            >
-              Remove Spell
-            </button>
-          </div>
-        </div>
-      ))}
-
-      {selectedSpells.length > 0 && getRecommendedScenario && (
-        <div
-          className={`mb-6 p-4 rounded ${
-            getRecommendedScenario.savings > 0 ? "bg-green-50" : "bg-yellow-50"
-          }`}
-        >
-          <h2 className="font-bold text-lg mb-2">Recommendation Analysis</h2>
-          <p
-            className={`${
-              getRecommendedScenario.savings > 0
-                ? "text-green-700"
-                : "text-yellow-700"
-            }`}
+      {/* Main Content */}
+      <div className="flex-1 p-4 lg:p-8 overflow-y-auto">
+        {/* Header */}
+        <div className="mb-6 lg:mb-12 text-center">
+          <h1
+            className={`text-3xl lg:text-5xl mb-2 lg:mb-4 font-wizard bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 text-transparent bg-clip-text`}
           >
-            {getRecommendedScenario.recommendation}
+            Dorothy & The Witch
+          </h1>
+          <p className="text-lg lg:text-xl text-purple-300 italic">
+            A Magical Journey Cost Analysis
           </p>
-          {getRecommendedScenario.savings > 0 && (
-            <div className="mt-2 text-sm">
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="bg-red-900/50 border border-red-500 text-red-200 px-4 py-3 rounded relative mb-4 text-sm lg:text-base">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+          </div>
+        )}
+
+        {/* Chart Container */}
+        <div className="bg-gray-800/50 p-4 lg:p-6 rounded-lg shadow-xl border border-purple-500/30 backdrop-blur-sm mb-4 lg:mb-6">
+          <canvas ref={chartRef}></canvas>
+        </div>
+
+        {/* Bottom Section Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+          {/* Journey Cost Summary */}
+          <div className="bg-gray-800/50 p-4 lg:p-6 rounded-lg border border-purple-500/30 backdrop-blur-sm">
+            <h2 className="font-bold text-lg lg:text-xl mb-3 lg:mb-4 text-purple-300">
+              Journey Cost Summary
+            </h2>
+            <div className="space-y-2 text-sm lg:text-base text-gray-300">
               <p>
-                Investment Required:{" "}
-                {(
-                  getRecommendedScenario.spellConfig.spell.tireCost +
-                  getRecommendedScenario.spellConfig.spell.engineCost
-                ).toFixed(2)}{" "}
-                gold coins
+                Cost Without Spells:{" "}
+                {generateBaselineData
+                  .reduce((sum, cost) => sum + cost, 0)
+                  .toFixed(2)}{" "}
+                Gold Coins
               </p>
-              <p>
-                Return on Investment: {getRecommendedScenario.roi.toFixed(1)}%
+              {getRecommendedScenario && (
+                <p>
+                  Cost With Recommended Spell:{" "}
+                  {generateSpellData(
+                    getRecommendedScenario.spellConfig.spell,
+                    getRecommendedScenario.spellConfig.month
+                  )
+                    .reduce((sum, cost) => sum + cost, 0)
+                    .toFixed(2)}{" "}
+                  Gold Coins
+                </p>
+              )}
+              <p
+                className={`font-bold ${
+                  costDifference > 0 ? "text-green-400" : "text-red-400"
+                }`}
+              >
+                Total Savings: {costDifference.toFixed(2)} Gold Coins
               </p>
+              <p>Risk Assessment: {getRiskAssessment()}</p>
+            </div>
+          </div>
+
+          {/* Recommendation Section */}
+          {selectedSpells.length > 0 && getRecommendedScenario && (
+            <div
+              className={`p-4 rounded ${
+                getRecommendedScenario.savings > 0
+                  ? "bg-green-900/50 border border-green-500"
+                  : "bg-yellow-900/50 border border-yellow-500"
+              }`}
+            >
+              <h2 className="font-bold text-base lg:text-lg mb-2">
+                Recommendation Analysis
+              </h2>
+              <p
+                className={`text-sm lg:text-base ${
+                  getRecommendedScenario.savings > 0
+                    ? "text-green-300"
+                    : "text-yellow-300"
+                }`}
+              >
+                {getRecommendedScenario.recommendation}
+              </p>
+              {getRecommendedScenario.savings > 0 && (
+                <div className="mt-2 text-xs lg:text-sm text-gray-300">
+                  <p>
+                    Investment Required:{" "}
+                    {(
+                      getRecommendedScenario.spellConfig.spell.tireCost +
+                      getRecommendedScenario.spellConfig.spell.engineCost
+                    ).toFixed(2)}{" "}
+                    gold coins
+                  </p>
+                  <p>
+                    Return on Investment:{" "}
+                    {getRecommendedScenario.roi.toFixed(1)}%
+                  </p>
+                </div>
+              )}
             </div>
           )}
-        </div>
-      )}
-
-      <div className="bg-white p-4 rounded shadow-lg mb-4">
-        <canvas ref={chartRef}></canvas>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div className="bg-blue-50 p-4 rounded">
-          <h2 className="font-bold mb-2">Journey Cost Summary</h2>
-          <p>
-            Cost Without Spells:{" "}
-            {generateBaselineData
-              .reduce((sum, cost) => sum + cost, 0)
-              .toFixed(2)}{" "}
-            Gold Coins
-          </p>
-          <p>
-            Cost With Selected Spells: {totalJourneyCost.toFixed(2)} Gold Coins
-          </p>
-          <p
-            className={`font-bold ${
-              costDifference > 0 ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            Total Savings: {costDifference.toFixed(2)} Gold Coins
-          </p>
-          <p>Risk Assessment: {getRiskAssessment()}</p>
         </div>
       </div>
     </div>

@@ -1,4 +1,11 @@
 import "./globals.css";
+import { Cinzel_Decorative } from "next/font/google";
+
+const wizardFont = Cinzel_Decorative({
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+  variable: "--font-wizard",
+});
 
 export const metadata = {
   title: "Create Next App",
@@ -7,7 +14,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${wizardFont.variable}`}>
       <body>{children}</body>
     </html>
   );
